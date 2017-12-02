@@ -12,5 +12,6 @@
   "dependencies": {
     "node-telegram-bot-api": "^0.29.0",
     "sshpk": "^1.13.1"
-  }
+  },
+  "engines": { "node": ">=4.0" }
 }
