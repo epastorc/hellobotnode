@@ -1,32 +1,25 @@
-var TelegramBot = require("node-telegram-bot-api");
+const TOKEN =
+  process.env.TELEGRAM_TOKEN || "464068632:AAEMKij-KJ6Jj9POWv07fpXXFyZw-aFbPJM";
+const TelegramBot = require("..");
+// See https://developers.openshift.com/en/node-js-environment-variables.html
+const options = {
+  webHook: {
+    port: process.env.OPENSHIFT_NODEJS_PORT,
+    host: process.env.OPENSHIFT_NODEJS_IP
+    // you do NOT need to set up certificates since OpenShift provides
+    // the SSL certs already (https://<app-name>.rhcloud.com)
+  }
+};
+// OpenShift routes from port :443 to OPENSHIFT_NODEJS_PORT
+const domain = process.env.OPENSHIFT_APP_DNS;
+const url = `${domain}:443`;
+const bot = new TelegramBot(TOKEN, options);
 
-var token = "464068632:AAEMKij-KJ6Jj9POWv07fpXXFyZw-aFbPJM";
-// Setup polling way
-const bot = new TelegramBot(token, { polling: true });
-var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+// This informs the Telegram servers of the new webhook.
+// Note: we do not need to pass in the cert, as it already provided
+bot.setWebHook(`${url}/bot${TOKEN}`);
 
-server.listen(server_port, server_ip_address, function() {
-  console.log("Listening on " + server_ip_address + ", port " + server_port);
-});
-// Matches "/echo [whatever]"
-bot.onText(/\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
-
-  const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever"
-
-  // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, resp);
-});
-
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on("message", msg => {
-  const chatId = msg.chat.id;
-
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, "Received your message");
+// Just to ping!
+bot.on("message", function onMessage(msg) {
+  bot.sendMessage(msg.chat.id, "I am alive on OpenShift!");
 });
